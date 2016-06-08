@@ -3,20 +3,215 @@
   <head>
     <title>View Animation</title>
     <link rel="stylesheet" href="http://openlayers.org/en/v3.16.0/css/ol.css" type="text/css">
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css" type="text/css">
+
     <script src="http://openlayers.org/en/v3.16.0/build/ol.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+    
+    
   </head>
   <body>
-    <div id="map" class="map"></div>
-    <button id="rotate-left" title="Rotate clockwise">↻</button>
-    <button id="rotate-right" title="Rotate counterclockwise">↺</button>
-    <button id="rotate-around-rome">Rotate around Rome</button>
-    <button id="pan-to-london">Pan to London</button>
-    <button id="elastic-to-moscow">Elastic to Moscow</button>
-    <button id="bounce-to-istanbul">Bounce to Istanbul</button>
-    <button id="spin-to-rome">Spin to Rome</button>
-    <button id="fly-to-bern">Fly to Bern</button>
-    <button id="spiral-to-madrid">Spiral to Madrid</button>
+    <div id="map" class="map" height="95%">
+     <div id="popup"></div>
+    </div>
+    <div id="buttons" height="5%">
+    <button id="pan-to-changsha">Home Town</button>
+    <button id="fly-to-wollongong">Wollongong</button>
+    <button id="bounce-to-sydney">Sydney</button>
+    <button id="fly-to-amazon">Amazon</button>
+    <button id="elastic-to-apple">Apple</button>
+    </div>
     <script>
+    
+      var changsha = ol.proj.fromLonLat([112.9388, 28.2282]);
+      var wollongong = ol.proj.fromLonLat([150.8842, -34.4156]);
+      var sydney = ol.proj.fromLonLat([151.2070, -33.8675]);
+      var amazon = ol.proj.fromLonLat([-122.336626, 47.622595]);
+      var apple = ol.proj.fromLonLat([-122.3325341, 47.6102014]);
+       
+       var changshaFeature = new ol.Feature({
+  		geometry: new ol.geom.Point(changsha),
+  		name: 'changsha',
+	   });
+	   var wollongongFeature = new ol.Feature({
+  		geometry: new ol.geom.Point(wollongong),
+  		name: 'wollongong',
+	   });
+	   var sydneyFeature = new ol.Feature({
+  		geometry: new ol.geom.Point(sydney),
+  		name: 'sydney',
+	   });
+	   var amazonFeature = new ol.Feature({
+  		geometry: new ol.geom.Point(amazon),
+  		name: 'amazon',
+	   });
+	   var appleFeature = new ol.Feature({
+  		geometry: new ol.geom.Point(apple),
+  		name: 'apple',
+	   });
+	   
+
+var iconStyle = new ol.style.Style({
+  image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+    anchor: [0.5, 46],
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'pixels',
+    opacity: 0.75,
+    src: 'http://openlayers.org/en/v3.0.0/examples/data/icon.png'
+  }))
+});
+
+changshaFeature.setStyle(iconStyle);
+wollongongFeature.setStyle(iconStyle);
+sydneyFeature.setStyle(iconStyle);
+amazonFeature.setStyle(iconStyle);
+appleFeature.setStyle(iconStyle);
+
+var iconFeatures = [changshaFeature, wollongongFeature, sydneyFeature, amazonFeature, appleFeature];
+var vectorSource = new ol.source.Vector({
+  features: iconFeatures
+});
+
+var vectorLayer = new ol.layer.Vector({
+  source: vectorSource
+});
+
+var view = new ol.View({
+        // the view's initial state
+        center: changsha,
+        zoom: 2
+      });
+      
+var map = new ol.Map({
+        layers: [
+          new ol.layer.Tile({
+            preload: 4,
+            source: new ol.source.OSM()
+          }),
+          vectorLayer
+        ],
+        // Improve user experience by loading tiles while animating. Will make
+        // animations stutter on mobile or slow devices.
+        loadTilesWhileAnimating: true,
+        target: 'map',
+        controls: ol.control.defaults({
+          attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+            collapsible: false
+          })
+        }),
+        view: view
+      });
+
+
+var element = document.getElementById('popup');
+
+var popup = new ol.Overlay({
+  element: element,
+  positioning: 'bottom-center',
+  stopEvent: false
+});
+map.addOverlay(popup);
+
+// display popup on click
+map.on('click', function(evt) {
+  var feature = map.forEachFeatureAtPixel(evt.pixel,
+      function(feature, layer) {
+        return feature;
+      });
+      
+  if (feature) {
+    var geometry = feature.getGeometry();
+    var coord = geometry.getCoordinates();
+    console.info(feature.U.name);
+    switch(feature.U.name) {
+    	case 'wollongong': {
+    	    $('#popup').empty();
+    		var popup = $('#popup').dialog({
+    			width: 500,
+    			height: 500
+    		});
+    		
+    		var img = $('<img id="dynamic">'); 
+    		
+			img.attr('src', 'http://www.ifsa-butler.org/images/stories/sig/program-cities/uow/Wollongong_Harbour-u.jpg');
+			img.css('height','95%');
+			img.css('width','95%');
+
+			popup.append(img);
+			break;
+    	}
+    	case 'sydney': {
+    	    $('#popup').empty();
+    		var popup = $('#popup').dialog({
+    			width: 800,
+    			height: 600
+    		});
+    		
+    		var img = $('<img id="dynamic">'); 
+    		
+			img.attr('src', 'NICTA-vis.jpg');
+			img.css('height','95%');
+			img.css('width','95%');
+
+			popup.append(img);
+			break;
+    	}
+    	case 'amazon': {
+    	    $('#popup').empty();
+    		var popup = $('#popup').dialog({
+    			width: 1000,
+    			height: 800
+    		});
+    		
+    		var img1 = $('<img id="dynamic">'); 
+			img1.attr('src', 'aft1.jpg');
+			img1.css('height','47%');
+			img1.css('width','95%');
+			var img2 = $('<img id="dynamic">'); 
+			img2.attr('src', 'aft2.png');
+			img2.css('height','47%');
+			img2.css('width','95%');
+			img2.css('margin-top','5px');
+
+			popup.append(img1).append(img2);
+			break;
+    	}
+    	case 'apple': {
+    	    $('#popup').empty();
+    		var popup = $('#popup').dialog({
+    			width: 500,
+    			height: 500
+    		});
+    		
+    		var img = $('<img id="dynamic">'); 
+    		
+			img.attr('src', 'apple.jpg');
+			img.css('height','95%');
+			img.css('width','95%');
+
+			popup.append(img);
+			break;
+    	}
+    }
+  }
+});
+
+// change mouse cursor when over marker
+$(map.getViewport()).on('mousemove', function(e) {
+  var pixel = map.getEventPixel(e.originalEvent);
+  var hit = map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+    return true;
+  });
+  if (hit) {
+    $('#map').css( 'cursor', 'pointer' );
+  } else {
+    $('#map').css( 'cursor', '' );
+  }
+});
+
+
+       
       // from https://github.com/DmitryBaranovskiy/raphael
       function bounce(t) {
         var s = 7.5625, p = 2.75, l;
@@ -43,121 +238,22 @@
       function elastic(t) {
         return Math.pow(2, -10 * t) * Math.sin((t - 0.075) * (2 * Math.PI) / 0.3) + 1;
       }
+      
 
-      var london = ol.proj.fromLonLat([-0.12755, 51.507222]);
-      var moscow = ol.proj.fromLonLat([37.6178, 55.7517]);
-      var istanbul = ol.proj.fromLonLat([28.9744, 41.0128]);
-      var rome = ol.proj.fromLonLat([12.5, 41.9]);
-      var bern = ol.proj.fromLonLat([7.4458, 46.95]);
-      var madrid = ol.proj.fromLonLat([-3.683333, 40.4]);
-
-      var view = new ol.View({
-        // the view's initial state
-        center: istanbul,
-        zoom: 6
-      });
-
-      var map = new ol.Map({
-        layers: [
-          new ol.layer.Tile({
-            preload: 4,
-            source: new ol.source.OSM()
-          })
-        ],
-        // Improve user experience by loading tiles while animating. Will make
-        // animations stutter on mobile or slow devices.
-        loadTilesWhileAnimating: true,
-        target: 'map',
-        controls: ol.control.defaults({
-          attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
-            collapsible: false
-          })
-        }),
-        view: view
-      });
-
-      var rotateLeft = document.getElementById('rotate-left');
-      rotateLeft.addEventListener('click', function() {
-        var rotateLeft = ol.animation.rotate({
-          duration: 2000,
-          rotation: -4 * Math.PI
-        });
-        map.beforeRender(rotateLeft);
-      }, false);
-      var rotateRight = document.getElementById('rotate-right');
-      rotateRight.addEventListener('click', function() {
-        var rotateRight = ol.animation.rotate({
-          duration: 2000,
-          rotation: 4 * Math.PI
-        });
-        map.beforeRender(rotateRight);
-      }, false);
-
-      var rotateAroundRome = document.getElementById('rotate-around-rome');
-      rotateAroundRome.addEventListener('click', function() {
-        var currentRotation = view.getRotation();
-        var rotateAroundRome = ol.animation.rotate({
-          anchor: rome,
-          duration: 1000,
-          rotation: currentRotation
-        });
-        map.beforeRender(rotateAroundRome);
-        view.rotate(currentRotation + (Math.PI / 2), rome);
-      }, false);
-
-      var panToLondon = document.getElementById('pan-to-london');
-      panToLondon.addEventListener('click', function() {
+      var toChangsha = document.getElementById('pan-to-changsha');
+      toChangsha.addEventListener('click', function() {
+        map.getView().setZoom(4);
         var pan = ol.animation.pan({
           duration: 2000,
           source: /** @type {ol.Coordinate} */ (view.getCenter())
         });
         map.beforeRender(pan);
-        view.setCenter(london);
+        view.setCenter(changsha);
       }, false);
-
-      var elasticToMoscow = document.getElementById('elastic-to-moscow');
-      elasticToMoscow.addEventListener('click', function() {
-        var pan = ol.animation.pan({
-          duration: 2000,
-          easing: elastic,
-          source: /** @type {ol.Coordinate} */ (view.getCenter())
-        });
-        map.beforeRender(pan);
-        view.setCenter(moscow);
-      }, false);
-
-      var bounceToIstanbul = document.getElementById('bounce-to-istanbul');
-      bounceToIstanbul.addEventListener('click', function() {
-        var pan = ol.animation.pan({
-          duration: 2000,
-          easing: bounce,
-          source: /** @type {ol.Coordinate} */ (view.getCenter())
-        });
-        map.beforeRender(pan);
-        view.setCenter(istanbul);
-      }, false);
-
-      var spinToRome = document.getElementById('spin-to-rome');
-      spinToRome.addEventListener('click', function() {
-        var duration = 2000;
-        var start = +new Date();
-        var pan = ol.animation.pan({
-          duration: duration,
-          source: /** @type {ol.Coordinate} */ (view.getCenter()),
-          start: start
-        });
-        var rotate = ol.animation.rotate({
-          duration: duration,
-          rotation: 2 * Math.PI,
-          start: start
-        });
-        map.beforeRender(pan, rotate);
-        view.setCenter(rome);
-      }, false);
-
-      var flyToBern = document.getElementById('fly-to-bern');
-      flyToBern.addEventListener('click', function() {
-        var duration = 2000;
+      
+      var toWollongong = document.getElementById('fly-to-wollongong');
+      toWollongong.addEventListener('click', function() {
+        var duration = 6000;
         var start = +new Date();
         var pan = ol.animation.pan({
           duration: duration,
@@ -170,12 +266,26 @@
           start: start
         });
         map.beforeRender(pan, bounce);
-        view.setCenter(bern);
+        view.setCenter(wollongong);
+        map.getView().setZoom(8);
       }, false);
-
-      var spiralToMadrid = document.getElementById('spiral-to-madrid');
-      spiralToMadrid.addEventListener('click', function() {
-        var duration = 2000;
+      
+      var toSydney = document.getElementById('bounce-to-sydney');
+      toSydney.addEventListener('click', function() {
+        map.getView().setZoom(10);
+        var pan = ol.animation.pan({
+          duration: 2000,
+          source: /** @type {ol.Coordinate} */ (view.getCenter())
+        });
+        map.beforeRender(pan);
+        view.setCenter(sydney);
+        
+      }, false);
+      
+      var toAmazon = document.getElementById('fly-to-amazon');
+      toAmazon.addEventListener('click', function() {
+        map.getView().setZoom(5);
+        var duration = 8000;
         var start = +new Date();
         var pan = ol.animation.pan({
           duration: duration,
@@ -184,17 +294,31 @@
         });
         var bounce = ol.animation.bounce({
           duration: duration,
-          resolution: 2 * view.getResolution(),
+          resolution: 4 * view.getResolution(),
           start: start
         });
-        var rotate = ol.animation.rotate({
-          duration: duration,
-          rotation: -4 * Math.PI,
-          start: start
-        });
-        map.beforeRender(pan, bounce, rotate);
-        view.setCenter(madrid);
+        map.beforeRender(pan, bounce);
+        
+        view.setCenter(amazon);
+        map.getView().setZoom(14);
       }, false);
+      
+
+      var toApple = document.getElementById('elastic-to-apple');
+      
+      toApple.addEventListener('click', function() {
+        var pan = ol.animation.pan({
+          duration: 2000,
+          source: /** @type {ol.Coordinate} */ (view.getCenter())
+        });
+        
+        map.beforeRender(pan);
+        
+        view.setCenter(apple);
+        map.getView().setZoom(16);
+        
+      }, false);
+      
     </script>
   </body>
 </html>
